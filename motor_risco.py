@@ -1,10 +1,10 @@
 # -----------------------------------------------------------------------------
-# Motor Analítico de Risco
-# Matemática pura (sem dependência do Streamlit): priorização e alocação de capital.
+# Risk Engine
+# Pure mathematics (no Streamlit dependency): prioritization and capital allocation.
 # -----------------------------------------------------------------------------
 import pandas as pd
 
-COLUNAS_DISPLAY = ["Ativo Auditado", "Departamento", "Valor do Ativo (€)", "Vulnerabilidade", "Norma/Framework", "Severidade da Ameaça (1-5)", "Custo de Correção (€)", "rgpd", "Risco Inerente (€)", "Decisão Estratégica", "Risco Residual (€)", "Tolerância (Apetite)"]
+COLUNAS_DISPLAY = ["Asset", "Department", "Asset Value (€)", "Vulnerability", "Framework", "Threat Severity (1-5)", "Mitigation Cost (€)", "rgpd", "Inherent Risk (€)", "Strategic Decision", "Residual Risk (€)", "Risk Appetite Tolerance"]
 
 
 def resolver_mochila_01(custos, valores, capacidade):
@@ -62,37 +62,37 @@ def processar_priorizacao_risco(assets, prob, faturacao, orcamento_disponivel, m
         risco_total_ativo = risco_operacional + (coima_alocada * prob)
 
         evaluated.append({
-            "Ativo Auditado": asset.get("asset_name", ""),
-            "Departamento": asset.get("dept", ""),
-            "Valor do Ativo (€)": asset.get("asset_value", 0),
-            "Vulnerabilidade": asset.get("vulnerability", ""),
-            "Norma/Framework": asset.get("framework", ""),
-            "Severidade da Ameaça (1-5)": asset.get("threat_level", 3),
-            "Custo de Correção (€)": asset.get("mitigation_cost", 0),
+            "Asset": asset.get("asset_name", ""),
+            "Department": asset.get("dept", ""),
+            "Asset Value (€)": asset.get("asset_value", 0),
+            "Vulnerability": asset.get("vulnerability", ""),
+            "Framework": asset.get("framework", ""),
+            "Threat Severity (1-5)": asset.get("threat_level", 3),
+            "Mitigation Cost (€)": asset.get("mitigation_cost", 0),
             "rgpd": asset.get("rgpd", False),
-            "Risco Inerente (€)": risco_total_ativo
+            "Inherent Risk (€)": risco_total_ativo
         })
 
     df = pd.DataFrame(evaluated)
     if df.empty:
         return df
 
-    custos = df["Custo de Correção (€)"].astype(int).tolist()
-    valores = (df["Risco Inerente (€)"] * (eficacia / 100.0)).astype(int).tolist()
+    custos = df["Mitigation Cost (€)"].astype(int).tolist()
+    valores = (df["Inherent Risk (€)"] * (eficacia / 100.0)).astype(int).tolist()
     ativos_financiados = resolver_mochila_01(custos, valores, orcamento_disponivel)
 
-    decisoes = ["Risco Aceite (Não Financiado)"] * len(df)
+    decisoes = ["Risk Accepted (Not Funded)"] * len(df)
     for idx in ativos_financiados:
-        decisoes[idx] = "Mitigação Financiada"
-    df["Decisão Estratégica"] = decisoes
+        decisoes[idx] = "Funded Mitigation"
+    df["Strategic Decision"] = decisoes
 
     fator_residual_pos_mitigacao = 1.0 - (eficacia / 100.0)
-    df["Risco Residual (€)"] = df.apply(
-        lambda x: x["Risco Inerente (€)"] * fator_residual_pos_mitigacao if x["Decisão Estratégica"] == "Mitigação Financiada" else x["Risco Inerente (€)"],
+    df["Residual Risk (€)"] = df.apply(
+        lambda x: x["Inherent Risk (€)"] * fator_residual_pos_mitigacao if x["Strategic Decision"] == "Funded Mitigation" else x["Inherent Risk (€)"],
         axis=1
     )
-    df["Tolerância (Apetite)"] = df.apply(
-        lambda x: "Dentro do Apetite" if x["Risco Residual (€)"] <= apetite else "Fora do Apetite",
+    df["Risk Appetite Tolerance"] = df.apply(
+        lambda x: "Within Appetite" if x["Residual Risk (€)"] <= apetite else "Outside Appetite",
         axis=1
     )
     return df

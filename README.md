@@ -1,57 +1,74 @@
 # Enterprise Cyber Risk & GRC Governance Dashboard 🛡️📊
 
-Uma plataforma interativa de Governação de Risco e Conformidade (GRC), desenhada para traduzir vulnerabilidades técnicas de cibersegurança numa linguagem executiva e financeira.
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.60-FF4B4B?logo=streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-pytest-green)
 
-Este simulador permite à Administração visualizar de forma clara a exposição ao risco, gerir o apetite ao risco da organização e otimizar a alocação de orçamentos de segurança com base no Retorno do Investimento (ROI).
+An interactive **Governance, Risk & Compliance (GRC)** platform that translates technical cybersecurity vulnerabilities into executive, financial language.
 
-![Visão Global do Dashboard e KPIs](assets/dashboard_kpis.png)
+This simulator lets the board visualize risk exposure, manage the organization's risk appetite, and optimize security budget allocation based on **Return on Investment (ROI)**.
 
-## Principais Funcionalidades
+![Dashboard Overview and KPIs](assets/dashboard_kpis.png)
 
-* **Quantificação Financeira do Risco:** Avaliação do impacto monetário de vulnerabilidades corporativas, integrando automaticamente o peso de coimas regulamentares (ex: RGPD a 2% ou 4% da faturação).
-* **Otimização de Orçamento (Knapsack 0/1):** Motor matemático que prioriza algoritmicamente que problemas corrigir primeiro. Maximiza a redução do risco perante um limite rígido de orçamento, garantindo o melhor ROI possível.
-* **Master Registry Editável e Dinâmico:** Registo central de conformidade (ISO 27001, NIST, PCI-DSS) onde o utilizador pode adicionar, editar ou remover ativos. Qualquer alteração recalcula em tempo real todos os KPIs e a distribuição de verbas.
-* **Mecanismos de Prevenção e Qualidade:** Validação de dados (ex: ativos com valor nulo ou sem departamento alocado) e sistema de alertas executivos caso um ativo não financiado ultrapasse o limite de tolerância (Apetite ao Risco) definido.
+## Key Features
 
-![Análise Visual e ROI](assets/graficos_roi.png)
+- **Financial Risk Quantification:** Monetized impact assessment of corporate vulnerabilities, automatically incorporating the weight of regulatory fines (e.g., GDPR at 2% or 4% of annual revenue).
+- **Budget Optimization (0/1 Knapsack):** A mathematical engine that algorithmically prioritizes which issues to fix first. It maximizes risk reduction under a hard budget constraint, guaranteeing the best possible ROI.
+- **Editable Dynamic Master Registry:** Central compliance register (ISO 27001, NIST, PCI-DSS) where users can add, edit or remove assets. Every change recalculates all KPIs and fund allocation in real time.
+- **Prevention & Data Quality Mechanisms:** Input validation (e.g., assets with null value or no department assigned) and executive alerts when an unfunded asset exceeds the defined risk appetite limit.
 
-## 🛠️ Instalação e Execução (Guia Rápido)
+![Visual Analysis and ROI](assets/graficos_roi.png)
 
-Para testar e correr este projeto no teu próprio computador, segue estes passos no terminal:
+## Modular Software Architecture
 
-### 1. Clonar o repositório para o teu computador
+The project follows sound software engineering practices, separating business logic from the graphical interface (Separation of Concerns):
 
-```bash
-git clone https://github.com/O-TEU-USERNAME/grc-cyber-risk-dashboard.git
-cd grc-cyber-risk-dashboard
-```
+- **`app.py`:** UI orchestration, session state and interactive visualizations with Streamlit and Plotly.
+- **`motor_risco.py`:** The analytical core. Handles the math, proportional GDPR fine allocation and the 0/1 Knapsack optimization algorithm.
+- **`gestor_dados.py`:** Raw data handling. Manages file import (CSV/Excel), column aliases, input normalization and safeguards against data-entry errors.
 
-> Nota: Substitui `O-TEU-USERNAME` pelo teu nome de utilizador real do GitHub.
-
-### 2. Instalar as dependências necessárias
-
-O painel requer o Streamlit e algumas bibliotecas de dados. Executa o seguinte comando para instalar tudo:
+## 🛠️ Quick Start (Local)
 
 ```bash
-python -m pip install streamlit pandas plotly openpyxl
-```
-
-### 3. Arrancar com a aplicação
-
-Inicia o servidor local do Streamlit. O teu navegador vai abrir automaticamente a plataforma.
-
-```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate    |    Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-## Arquitetura de Software Modular
+Your browser will open the dashboard automatically at `http://localhost:8501`.
 
-O projeto segue boas práticas de engenharia de software, separando a lógica de negócio da interface gráfica (Separation of Concerns):
+> 💡 The CSV template downloaded from the sidebar accepts both **English and Portuguese headers** (e.g., `asset_name`/`Ativo`, `department`/`Departamento`).
 
-* **app.py:** Orquestração da interface (UI), estado da sessão e visualizações interativas através do Streamlit e Plotly.
-* **motor_risco.py:** O núcleo analítico. Processa a matemática, a imputação proporcional do RGPD e executa o algoritmo de otimização da Mochila 0/1.
-* **gestor_dados.py:** Tratamento de dados brutos. Lida com a importação de ficheiros (CSV/Excel), criação de aliases de colunas, normalização de inputs e salvaguarda contra erros de introdução.
+## 🐳 Quick Start (Docker)
 
-## 📋 Exportação e Auditoria
+No local Python required — one command:
 
-Após a simulação de investimento, todo o registo de risco atualizado (com as decisões estratégicas e o risco residual calculado) pode ser exportado para formato CSV, servindo como prova de governação para equipas de auditoria (ex: ISO 27001, SOC2).
+```bash
+docker compose up --build
+```
+
+Or with plain Docker:
+
+```bash
+docker build -t grc-dashboard .
+docker run -p 8501:8501 grc-dashboard
+```
+
+Open `http://localhost:8501`.
+
+## ✅ Running the Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+Three suites cover the engine math, data management (upload/aliases/editor sync) and end-to-end UI flows via Streamlit's `AppTest`. The same tests run automatically in CI (GitHub Actions) on every push.
+
+## 📋 Export & Audit
+
+After the investment simulation, the full updated risk register (with strategic decisions and calculated residual risk) can be exported as CSV — governance evidence for audit teams (e.g., ISO 27001, SOC 2).
+
+---

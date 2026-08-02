@@ -7,38 +7,35 @@ if PROJ not in sys.path:
 
 from streamlit.testing.v1 import AppTest
 
-# ---------------------------------------------------------------------------
-# 1) Smoke: a app corre sem exceções e expõe os widgets core
-# ---------------------------------------------------------------------------
-at = AppTest.from_file(os.path.join(PROJ, "app.py"), default_timeout=30)
-at.run()
-assert not at.exception, at.exception[0] if at.exception else None
-assert len(at.dataframe) >= 2, "deve existir o editor (data_editor) e o business case"
-assert len(at.download_button) >= 1, "deve existir o botão de descarregar"
-assert len(at.button) >= 1, "deve existir o botão de reset"
-assert len(at.tabs) == 2, "devem existir as 2 tabs (Análise / Master Registry)"
-assert len(at.metric) >= 4, "devem existir os 4 KPIs"
-assert len(at.get("plotly_chart")) >= 1, "devem existir gráficos"
-print("1) smoke OK ->",
-      f"dataframes={len(at.dataframe)}, buttons={len(at.button)}, metrics={len(at.metric)}, charts={len(at.get('plotly_chart'))}")
-print("   -> tabs:", len(at.tabs), "| download_buttons:", len(at.download_button))
 
-# ---------------------------------------------------------------------------
-# 2) Reset de dados de demonstração continua funcional
-# ---------------------------------------------------------------------------
-at.button[0].click()
-at.run()
-assert not at.exception, at.exception[0] if at.exception else None
-assert at.session_state["usar_demo"] is True
-assert len(at.session_state["assets_editados"]) == 12
-print("2) reset demo OK ->", len(at.session_state["assets_editados"]), "ativos")
+def _launch():
+    at = AppTest.from_file(os.path.join(PROJ, "app.py"), default_timeout=30)
+    at.run()
+    return at
 
-# ---------------------------------------------------------------------------
-# 3) Filtro por departamento não quebra a página
-# ---------------------------------------------------------------------------
-at.selectbox[0].select("Financeiro").run()
-assert not at.exception, at.exception[0] if at.exception else None
-assert at.selectbox[0].value == "Financeiro"
-print("3) filtro departamento OK ->", at.selectbox[0].value)
 
-print("ALL APP TESTS PASSED")
+def test_smoke_no_exceptions():
+    at = _launch()
+    assert not at.exception, at.exception[0] if at.exception else None
+    assert len(at.dataframe) >= 2, "data_editor and business case must be present"
+    assert len(at.download_button) >= 1, "must have a download button"
+    assert len(at.button) >= 1, "must have the reset button"
+    assert len(at.tabs) == 2, "must have the 2 tabs (Executive Analysis / Master Registry)"
+    assert len(at.metric) >= 4, "must have the 4 KPIs"
+    assert len(at.get("plotly_chart")) >= 1, "must have charts"
+
+
+def test_reset_demo_data():
+    at = _launch()
+    at.button[0].click()
+    at.run()
+    assert not at.exception, at.exception[0] if at.exception else None
+    assert at.session_state["usar_demo"] is True
+    assert len(at.session_state["assets_editados"]) == 12
+
+
+def test_department_filter_does_not_break():
+    at = _launch()
+    at.selectbox[0].select("Finance").run()
+    assert not at.exception, at.exception[0] if at.exception else None
+    assert at.selectbox[0].value == "Finance"

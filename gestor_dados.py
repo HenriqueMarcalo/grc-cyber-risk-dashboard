@@ -1,35 +1,35 @@
 # -----------------------------------------------------------------------------
-# Gestor de Dados
-# Processamento: dados de demonstração, importação de ficheiros (CSV/Excel),
-# aliases/normalização e mapeamentos do editor.
+# Data Manager
+# Processing: demo data, file import (CSV/Excel), aliases/normalization and
+# data-editor mappings.
 # -----------------------------------------------------------------------------
 import pandas as pd
 import streamlit as st
 
 assets_default = [
-    {"asset_name": "ERP SAP Core", "dept": "Financeiro", "asset_value": 450000, "vulnerability": "Acesso Admin sem MFA", "framework": "ISO 27001 A.8.5", "rgpd": True, "threat_level": 4, "mitigation_cost": 20000},
-    {"asset_name": "Gateway API Pagamentos", "dept": "Financeiro", "asset_value": 300000, "vulnerability": "TLS 1.0 Obsoleto", "framework": "PCI-DSS v4 4.1", "rgpd": True, "threat_level": 3, "mitigation_cost": 15000},
-    {"asset_name": "Servidor de Faturação", "dept": "Financeiro", "asset_value": 120000, "vulnerability": "Sem Backups Diários", "framework": "ISO 27001 A.8.13", "rgpd": False, "threat_level": 3, "mitigation_cost": 5000},
-    {"asset_name": "Portal Workday Cloud", "dept": "Recursos Humanos", "asset_value": 180000, "vulnerability": "Permissões de Ex-Colaboradores", "framework": "ISO 27001 A.6.8", "rgpd": True, "threat_level": 2, "mitigation_cost": 8000},
-    {"asset_name": "BD Avaliação Desempenho", "dept": "Recursos Humanos", "asset_value": 60000, "vulnerability": "Dados não cifrados", "framework": "NIST CSF PR.DS-1", "rgpd": True, "threat_level": 2, "mitigation_cost": 12000},
-    {"asset_name": "Plataforma E-Commerce", "dept": "Operações", "asset_value": 650000, "vulnerability": "Sem Patches Críticos", "framework": "NIST CSF PR.PS-1", "rgpd": True, "threat_level": 5, "mitigation_cost": 50000},
-    {"asset_name": "Servidor Logística", "dept": "Operações", "asset_value": 220000, "vulnerability": "Ausência de SIEM", "framework": "ISO 27001 A.8.16", "rgpd": False, "threat_level": 3, "mitigation_cost": 40000},
-    {"asset_name": "Repositório Git (CI/CD)", "dept": "Operações", "asset_value": 140000, "vulnerability": "Credenciais API Hardcoded", "framework": "OWASP CI/CD Flaws", "rgpd": False, "threat_level": 4, "mitigation_cost": 25000},
-    {"asset_name": "Website (WordPress)", "dept": "Marketing", "asset_value": 40000, "vulnerability": "Plugins Desatualizados", "framework": "ISO 27001 A.8.8", "rgpd": False, "threat_level": 4, "mitigation_cost": 4000},
-    {"asset_name": "CRM HubSpot Sync", "dept": "Marketing", "asset_value": 210000, "vulnerability": "Exportação sem Logs", "framework": "RGPD Artigo 32º", "rgpd": True, "threat_level": 3, "mitigation_cost": 18000},
-    {"asset_name": "Servidor de Patentes", "dept": "I&D", "asset_value": 500000, "vulnerability": "Rede Wi-Fi não segregada", "framework": "ISO 27001 A.8.20", "rgpd": False, "threat_level": 4, "mitigation_cost": 30000},
-    {"asset_name": "Estações CAD Engenharia", "dept": "I&D", "asset_value": 90000, "vulnerability": "Antivírus desativado", "framework": "NIST CSF PR.RE-1", "rgpd": False, "threat_level": 2, "mitigation_cost": 6000},
+    {"asset_name": "ERP SAP Core", "dept": "Finance", "asset_value": 450000, "vulnerability": "Admin Access without MFA", "framework": "ISO 27001 A.8.5", "rgpd": True, "threat_level": 4, "mitigation_cost": 20000},
+    {"asset_name": "Payments API Gateway", "dept": "Finance", "asset_value": 300000, "vulnerability": "Obsolete TLS 1.0", "framework": "PCI-DSS v4 4.1", "rgpd": True, "threat_level": 3, "mitigation_cost": 15000},
+    {"asset_name": "Billing Server", "dept": "Finance", "asset_value": 120000, "vulnerability": "No Daily Backups", "framework": "ISO 27001 A.8.13", "rgpd": False, "threat_level": 3, "mitigation_cost": 5000},
+    {"asset_name": "Workday Cloud Portal", "dept": "Human Resources", "asset_value": 180000, "vulnerability": "Former Employee Permissions", "framework": "ISO 27001 A.6.8", "rgpd": True, "threat_level": 2, "mitigation_cost": 8000},
+    {"asset_name": "Performance Review DB", "dept": "Human Resources", "asset_value": 60000, "vulnerability": "Unencrypted Data", "framework": "NIST CSF PR.DS-1", "rgpd": True, "threat_level": 2, "mitigation_cost": 12000},
+    {"asset_name": "E-Commerce Platform", "dept": "Operations", "asset_value": 650000, "vulnerability": "Missing Critical Patches", "framework": "NIST CSF PR.PS-1", "rgpd": True, "threat_level": 5, "mitigation_cost": 50000},
+    {"asset_name": "Logistics Server", "dept": "Operations", "asset_value": 220000, "vulnerability": "No SIEM Coverage", "framework": "ISO 27001 A.8.16", "rgpd": False, "threat_level": 3, "mitigation_cost": 40000},
+    {"asset_name": "Git Repository (CI/CD)", "dept": "Operations", "asset_value": 140000, "vulnerability": "Hardcoded API Credentials", "framework": "OWASP CI/CD Flaws", "rgpd": False, "threat_level": 4, "mitigation_cost": 25000},
+    {"asset_name": "Website (WordPress)", "dept": "Marketing", "asset_value": 40000, "vulnerability": "Outdated Plugins", "framework": "ISO 27001 A.8.8", "rgpd": False, "threat_level": 4, "mitigation_cost": 4000},
+    {"asset_name": "HubSpot CRM Sync", "dept": "Marketing", "asset_value": 210000, "vulnerability": "Export Without Logs", "framework": "GDPR Art. 32", "rgpd": True, "threat_level": 3, "mitigation_cost": 18000},
+    {"asset_name": "Patent Server", "dept": "R&D", "asset_value": 500000, "vulnerability": "Non-segregated Wi-Fi Network", "framework": "ISO 27001 A.8.20", "rgpd": False, "threat_level": 4, "mitigation_cost": 30000},
+    {"asset_name": "CAD Engineering Stations", "dept": "R&D", "asset_value": 90000, "vulnerability": "Antivirus Disabled", "framework": "NIST CSF PR.RE-1", "rgpd": False, "threat_level": 2, "mitigation_cost": 6000},
 ]
 
 ALIASES_COLUNAS = {
-    "asset_name": ["asset_name", "ativo", "ativo auditado", "nome do ativo", "name"],
-    "dept": ["dept", "departamento"],
-    "asset_value": ["asset_value", "valor do ativo", "valor do ativo (€)", "valor", "value"],
-    "vulnerability": ["vulnerability", "vulnerabilidade"],
-    "framework": ["framework", "norma", "norma/framework"],
-    "rgpd": ["rgpd", "gdpr", "dados pessoais"],
-    "threat_level": ["threat_level", "nivel de ameaca", "nível de ameaça", "ameaca", "threat"],
-    "mitigation_cost": ["mitigation_cost", "custo de correcao", "custo de correção", "custo", "cost"],
+    "asset_name": ["asset_name", "asset", "asset name", "ativo", "ativo auditado", "nome do ativo", "name"],
+    "dept": ["dept", "department", "departamento"],
+    "asset_value": ["asset_value", "asset value", "asset value (€)", "valor do ativo", "valor do ativo (€)", "valor", "value"],
+    "vulnerability": ["vulnerability", "vulnerabilidades", "vulnerabilidade"],
+    "framework": ["framework", "norma", "norma/framework", "standard"],
+    "rgpd": ["rgpd", "gdpr", "dados pessoais", "personal data"],
+    "threat_level": ["threat_level", "threat severity", "threat severity (1-5)", "threat", "nivel de ameaca", "nível de ameaça", "ameaca"],
+    "mitigation_cost": ["mitigation_cost", "mitigation cost", "mitigation cost (€)", "custo de correcao", "custo de correção", "custo", "cost"],
 }
 
 
@@ -60,12 +60,12 @@ def carregar_ativos_do_upload(uploaded_file):
         df_importado = _ler_ficheiro_upload(uploaded_file)
     except ModuleNotFoundError as erro:
         if "openpyxl" in str(erro):
-            st.error("Para importar ficheiros Excel (xlsx) é necessário instalar o openpyxl: `pip install openpyxl`. Use um ficheiro CSV ou os dados de demonstração entretanto.")
+            st.error("To import Excel files (xlsx) you need to install openpyxl: `pip install openpyxl`. Use a CSV file or the demo data in the meantime.")
         else:
-            st.error(f"Não foi possível ler o ficheiro: {erro}")
+            st.error(f"Could not read the file: {erro}")
         return assets_default, True
     except Exception as erro:
-        st.error(f"Não foi possível ler o ficheiro: {erro}")
+        st.error(f"Could not read the file: {erro}")
         return assets_default, True
 
     renomear = {}
@@ -80,7 +80,7 @@ def carregar_ativos_do_upload(uploaded_file):
     obrigatorias = ["asset_name", "dept", "asset_value", "mitigation_cost"]
     faltam = [c for c in obrigatorias if c not in df_importado.columns]
     if faltam:
-        st.error(f"Faltam colunas no ficheiro: {', '.join(faltam)}")
+        st.error(f"Missing columns in the file: {', '.join(faltam)}")
         return assets_default, True
 
     df_importado["asset_value"] = pd.to_numeric(df_importado["asset_value"], errors="coerce").fillna(0)
@@ -98,13 +98,13 @@ def carregar_ativos_do_upload(uploaded_file):
 
     for coluna in ["vulnerability", "framework"]:
         if coluna not in df_importado.columns:
-            df_importado[coluna] = "N/D"
-        df_importado[coluna] = df_importado[coluna].fillna("N/D")
+            df_importado[coluna] = "N/A"
+        df_importado[coluna] = df_importado[coluna].fillna("N/A")
 
     return df_importado.to_dict("records"), False
 
 
-MAPA_EDITOR_PARA_RAW = {"Ativo Auditado": "asset_name", "Departamento": "dept", "Valor do Ativo (€)": "asset_value", "Vulnerabilidade": "vulnerability", "Norma/Framework": "framework", "Severidade da Ameaça (1-5)": "threat_level", "Custo de Correção (€)": "mitigation_cost"}
+MAPA_EDITOR_PARA_RAW = {"Asset": "asset_name", "Department": "dept", "Asset Value (€)": "asset_value", "Vulnerability": "vulnerability", "Framework": "framework", "Threat Severity (1-5)": "threat_level", "Mitigation Cost (€)": "mitigation_cost"}
 COLUNAS_RAW = ["asset_name", "dept", "asset_value", "vulnerability", "framework", "rgpd", "threat_level", "mitigation_cost"]
 
 
